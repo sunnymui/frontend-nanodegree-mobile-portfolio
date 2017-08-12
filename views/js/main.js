@@ -501,11 +501,25 @@ function updatePositions() {
   frame++;
   window.performance.mark("mark_start_frame");
 
-  var items = document.querySelectorAll('.mover');
-  for (var i = 0; i < items.length; i++) {
-    var phase = Math.sin((document.body.scrollTop / 1250) + (i % 5));
-    items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
+  // instead of using the actual scroll position in the formula, just use
+  // an arbitrary number so we don't go causing reflows, it doesn't matter anyway
+  // whether the moving pizzas synchronize in direction with the scroll direction
+  var scroll_position = scroll_limit;
+
+  for (var i = 0; i < movers.length; i++) {
+    var phase = Math.sin((scroll_position) + (i % 200));
+    var transform = movers[i].style.transform;
+    transform_elements = transform.split(',');
+    transform_elements[0] = 'translate('+(movers[i].basicLeft + phase *8) + 'vw';
+    movers[i].style.transform = transform_elements.join(',');
   }
+
+  // reset the scroll position if reaching the end
+  if (scroll_position === 10000) {
+    scroll_limit = 0;
+  }
+  // increment scroll position so element positions change
+  scroll_limit += 100;
 
   // User Timing API to the rescue again. Seriously, it's worth learning.
   // Super easy to create custom metrics.
@@ -520,19 +534,33 @@ function updatePositions() {
 // runs updatePositions on scroll
 window.addEventListener('scroll', updatePositions);
 
+// cache movers
+var movers;
+// used for animating the bg pizzas
+var scroll_limit = 10000;
+
 // Generates the sliding pizzas when the page loads.
 document.addEventListener('DOMContentLoaded', function() {
-  var cols = 8;
-  var s = 256;
-  for (var i = 0; i < 200; i++) {
+  var cols = 4;
+  var s = 25;
+  var s_left = 25;
+  // create a dom fragment to store all the mover elements to append at once
+  var movers_fragment = document.createDocumentFragment();
+  for (var i = 0; i < 20; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "images/pizza.png";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
-    elem.basicLeft = (i % cols) * s;
-    elem.style.top = (Math.floor(i / cols) * s) + 'px';
-    document.querySelector("#movingPizzas1").appendChild(elem);
+    elem.basicLeft = (i % cols) * s_left;
+    // use transforms and viewport positioning so no reflows and we don't have to
+    // generate/manipulate hundreds of bg pizzas to cover the viewport
+    elem.style.transform = 'translate('+(elem.basicLeft) + 'vw'+','+ (Math.floor(i / cols) * s) + 'vh)';
+    movers_fragment.appendChild(elem);
   }
+  // append the doc fragment to the actual dom
+  document.querySelector("#movingPizzas1").appendChild(movers_fragment);
+  // cache movers dom elements for manipulation by updatePositions
+  movers = document.getElementsByClassName('mover');
   updatePositions();
 });
