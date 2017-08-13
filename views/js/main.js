@@ -23,6 +23,9 @@ Sunny Mui
 var movers;
 // used for animating the bg pizzas
 var scroll_limit = 10000;
+// create a document fragment to append generated pizza elements to
+//so only one dom append op is needed
+var random_pizza_doc_fragment = document.createDocumentFragment();
 // init cache var for randomly generated pizzas for the pizza resizer function
 // so it doesn't go fetching it every time the resizer is run
 var random_pizza_nodes;
@@ -394,7 +397,6 @@ var pizzaElementGenerator = function(i) {
   pizzaImageContainer.appendChild(pizzaImage);
   pizzaContainer.appendChild(pizzaImageContainer);
 
-
   pizzaDescriptionContainer.style.width="65%";
 
   pizzaName = document.createElement("h4");
@@ -414,7 +416,7 @@ var resizePizzas = function(size) {
 
   window.performance.mark("mark_start_resize");   // User Timing API function
 
-  // Changes the value for the size of the pizza above the slider
+  // Changes the text value for the size of the pizza above the slider
   function changeSliderLabel(size) {
     switch(size) {
       case "1":
@@ -436,8 +438,10 @@ var resizePizzas = function(size) {
   // Iterates through pizza elements on the page and changes their widths
   function changePizzaSizes(size) {
 
+    // init the new width var
     var newWidth;
 
+    // assign newwidth a value based on the passed in size
     switch(size) {
       case "1":
         newWidth = 25;
@@ -452,7 +456,9 @@ var resizePizzas = function(size) {
         console.log("bug in sizeSwitcher");
     }
 
+    // loop through the pizza nodes
     for (var i = 0; i < random_pizza_nodes.length; i++) {
+      // directly set the new pizza size width css
       random_pizza_nodes[i].style.width = newWidth+'%';
     }
   }
@@ -471,10 +477,13 @@ window.performance.mark("mark_start_generating"); // collect timing data
 // This for-loop actually creates and appends all of the pizzas when the page loads
 for (var i = 2; i < 100; i++) {
   var pizzasDiv = document.getElementById("randomPizzas");
-  pizzasDiv.appendChild(pizzaElementGenerator(i));
+  // append pizza elements into the doc fragment
+  random_pizza_doc_fragment.appendChild(pizzaElementGenerator(i));
+  // append doc fragment to the dom
+  pizzasDiv.appendChild(random_pizza_doc_fragment);
 }
 // cache the pizza nodes for later manipulation by the pizza resizer function
-random_pizza_nodes = document.getElementsByClassName('.randomPizzaContainer');
+random_pizza_nodes = document.getElementsByClassName('randomPizzaContainer');
 
 // User Timing API again. These measurements tell you how long it took to generate the initial pizzas
 window.performance.mark("mark_end_generating");
@@ -509,11 +518,17 @@ function updatePositions() {
   // whether the moving pizzas synchronize in direction with the scroll direction
   var scroll_position = scroll_limit;
 
+  // loop through the bg mover pizzas
   for (var i = 0; i < movers.length; i++) {
+    // movement factor varying with scroll position
     var phase = Math.sin((scroll_position) + (i % 200));
+    // the existing value for the transform css style
     var transform = movers[i].style.transform;
-    transform_elements = transform.split(',');
+    // split the value of the css transform into the x and y portions
+    var transform_elements = transform.split(',');
+    // set new value of the x transform using the phase movement factor
     transform_elements[0] = 'translate('+(movers[i].basicLeft + phase *8) + 'vw';
+    // join the split parts of the css back together as the new transform css value
     movers[i].style.transform = transform_elements.join(',');
   }
 
@@ -541,24 +556,26 @@ window.addEventListener('scroll', updatePositions);
 document.addEventListener('DOMContentLoaded', function() {
   var cols = 4;
   var s = 25;
-  var s_left = 25;
   // create a dom fragment to store all the mover elements to append at once
   var movers_fragment = document.createDocumentFragment();
+  // create the bg mover pizza elements
   for (var i = 0; i < 20; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "images/pizza.png";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
-    elem.basicLeft = (i % cols) * s_left;
+    elem.basicLeft = (i % cols) * s;
     // use transforms and viewport positioning so no reflows and we don't have to
     // generate/manipulate hundreds of bg pizzas to cover the viewport
     elem.style.transform = 'translate('+(elem.basicLeft) + 'vw'+','+ (Math.floor(i / cols) * s) + 'vh)';
+    // append the element to the doc fragment
     movers_fragment.appendChild(elem);
   }
   // append the doc fragment to the actual dom
   document.querySelector("#movingPizzas1").appendChild(movers_fragment);
-  // cache movers dom elements for manipulation by updatePositions
+  // cache collection of  movers dom elements for manipulation by updatePositions
   movers = document.getElementsByClassName('mover');
+  // initial run of update positions 
   updatePositions();
 });
