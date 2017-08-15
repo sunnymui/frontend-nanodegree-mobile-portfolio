@@ -29,6 +29,8 @@ var random_pizza_doc_fragment = document.createDocumentFragment();
 // init cache var for randomly generated pizzas for the pizza resizer function
 // so it doesn't go fetching it every time the resizer is run
 var random_pizza_nodes;
+// flag to prevent multiple requestAnimationFrame calls in debounced scroll listener
+var scroll_ticking = false;
 
 // As you may have realized, this website randomly generates pizzas.
 // Here are arrays of all possible pizza ingredients.
@@ -508,14 +510,39 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 // The following code for sliding background pizzas was pulled from Ilya's demo found at:
 // https://www.igvita.com/slides/2012/devtools-tips-and-tricks/jank-demo.html
 
+function onScroll() {
+
+  // logic to increment/reset the pseudo scroll value tracker, prevents
+  // layout triggering in the dom from reading the scroll position
+  // reset the scroll limit if reaching the end of the arbitrary range
+  if (scroll_limit === 10000) {
+    scroll_limit = 0;
+  }
+  // increment scroll position so element positions can change with scroll
+  scroll_limit += 100;
+
+  // make sure a raf call isn't already running by checking the scroll tick flag
+  if (!scroll_ticking) {
+    // call updatepositions using request animation frame to debounce the call,
+    // essentially keeps updatePositions from being called at a rate greater than
+    // 60fps or every ~16ms
+    requestAnimationFrame(updatePositions);
+  }
+
+  // set scroll ticking flag to true, prevents another call to raf while current
+  // requestanimationframe call runs
+  scroll_ticking = true;
+}
+
 // Moves the sliding background pizzas based on scroll position
 function updatePositions() {
   frame++;
   window.performance.mark("mark_start_frame");
 
-  // instead of using the actual scroll position in the formula, just use
-  // an arbitrary number so we don't go causing reflows, it doesn't matter anyway
-  // whether the moving pizzas synchronize in direction with the scroll direction
+  // instead of using the grabbing the actual scroll position, just use an
+  // arbitrary number that gets incremented so we don't go causing reflows,
+  // actual position doesn't really matter since it the value of scroll position
+  // just sychnronizes moving pizza direction with the scroll direction
   var scroll_position = scroll_limit;
 
   // loop through the bg mover pizzas
@@ -532,12 +559,8 @@ function updatePositions() {
     movers[i].style.transform = transform_elements.join(',');
   }
 
-  // reset the scroll position if reaching the end
-  if (scroll_position === 10000) {
-    scroll_limit = 0;
-  }
-  // increment scroll position so element positions change
-  scroll_limit += 100;
+  // set scroll ticking back to false to allow animation to run again
+  scroll_ticking = false;
 
   // User Timing API to the rescue again. Seriously, it's worth learning.
   // Super easy to create custom metrics.
@@ -550,7 +573,7 @@ function updatePositions() {
 }
 
 // runs updatePositions on scroll
-window.addEventListener('scroll', updatePositions);
+window.addEventListener('scroll', onScroll, false);
 
 // Generates the sliding pizzas when the page loads.
 document.addEventListener('DOMContentLoaded', function() {
