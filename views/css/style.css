@@ -31,6 +31,8 @@ form {
 
 #movingPizzas1 {
   position: absolute;
+  /* centers the pizzas since they're all by default moved over 25% fromt he left */
+  left: 12.5%;
 }
 
 .mover {
