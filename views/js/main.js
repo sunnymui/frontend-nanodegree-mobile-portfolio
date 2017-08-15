@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // create the bg mover pizza elements
   for (var i = 0; i < 20; i++) {
     var elem = document.createElement('img');
-    elem.className = 'mover';
+    elem.classList.add('mover');
     elem.src = "images/pizza.png";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
