@@ -576,6 +576,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector("#movingPizzas1").appendChild(movers_fragment);
   // cache collection of  movers dom elements for manipulation by updatePositions
   movers = document.getElementsByClassName('mover');
-  // initial run of update positions 
+  // initial run of update positions
   updatePositions();
 });
