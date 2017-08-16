@@ -572,11 +572,7 @@ function updatePositions() {
   }
 }
 
-// runs updatePositions on scroll
-window.addEventListener('scroll', onScroll, false);
-
-// Generates the sliding pizzas when the page loads.
-document.addEventListener('DOMContentLoaded', function() {
+function generateMovers() {
   var cols = 4;
   var s = 25;
   // create a dom fragment to store all the mover elements to append at once
@@ -601,4 +597,18 @@ document.addEventListener('DOMContentLoaded', function() {
   movers = document.getElementsByClassName('mover');
   // initial run of update positions
   updatePositions();
-});
+}
+
+// runs updatePositions on scroll
+window.addEventListener('scroll', onScroll);
+
+// detect if dom is already ready for manipulation (for async script load)
+if (document.readyState === "complete" ||
+    document.readyState === "loaded" ||
+    document.readyState === "interactive") {
+      // if dom is already loaded then generate the bg pizzas
+      generateMovers();
+} else {
+  // Generates the sliding pizzas when the page loads.
+  document.addEventListener('DOMContentLoaded', generateMovers);
+}
