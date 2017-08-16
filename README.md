@@ -23,7 +23,7 @@ The relevant page for these optimizations is `pizza.html`, in the `views` direct
 * Images used on the page losslessly optimized
 * Unused CSS declarations removed via UnCSS
 * Fixed layout thrashing by switching Javascript triggered CSS changes from `left: __px` and other position settings to using CSS transforms so the browser only has to composite the layers instead of forcing reflows
-* Used viewport positioning units instead of absolute positioning for animated background elements to reduce the total number of elements that need to be rendered to fill the user's window from 200 to 20
+* Reduced number of animated background elements to minimum needed to fill the screen by calculating height of window
 * Replaced reading of actual scroll position with an arbitrary value pseudo scroll tracker to prevent unnecessary DOM reads triggering layout for a simple animation effect
 * Debounced scroll event functions using `requestAnimationFrame` to prevent excessive calls to update functions
 * Refactored pizza element resizer to remove unnecessary DOM reads of element sizes, instead directly setting the sizes of elements

@@ -22,7 +22,8 @@ Sunny Mui
 // cache movers
 var movers;
 // used for animating the bg pizzas
-var scroll_limit = 10000;
+var scroll_limit = 100;
+var scroll_increment = 100;
 // create a document fragment to append generated pizza elements to
 //so only one dom append op is needed
 var random_pizza_doc_fragment = document.createDocumentFragment();
@@ -512,14 +513,14 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 
 function onScroll() {
 
-  // logic to increment/reset the pseudo scroll value tracker, prevents
+  // reset the pseudo scroll value tracker direction when limits reached, prevents
   // layout triggering in the dom from reading the scroll position
-  // reset the scroll limit if reaching the end of the arbitrary range
-  if (scroll_limit === 10000) {
-    scroll_limit = 0;
+  if (scroll_limit === 100000 || scroll_limit === 0) {
+    // reverse increment direction to maintain smooth animation
+    scroll_increment *= -1;
   }
   // increment scroll position so element positions can change with scroll
-  scroll_limit += 100;
+  scroll_limit += scroll_increment;
 
   // make sure a raf call isn't already running by checking the scroll tick flag
   if (!scroll_ticking) {
@@ -548,15 +549,9 @@ function updatePositions() {
   // loop through the bg mover pizzas
   for (var i = 0; i < movers.length; i++) {
     // movement factor varying with scroll position
-    var phase = Math.sin((scroll_position) + (i % 200));
-    // the existing value for the transform css style
-    var transform = movers[i].style.transform;
-    // split the value of the css transform into the x and y portions
-    var transform_elements = transform.split(',');
-    // set new value of the x transform using the phase movement factor
-    transform_elements[0] = 'translate('+(movers[i].basicLeft + phase *8) + 'vw';
-    // join the split parts of the css back together as the new transform css value
-    movers[i].style.transform = transform_elements.join(',');
+    var phase = Math.sin((scroll_position/1250) + (i % 5));
+    // use transform so only compositing needs to be done
+    movers[i].style.transform = 'translate(' + (100 * phase) + i +'px)';
   }
 
   // set scroll ticking back to false to allow animation to run again
@@ -573,21 +568,25 @@ function updatePositions() {
 }
 
 function generateMovers() {
-  var cols = 4;
-  var s = 25;
+
+  var cols = 8;
+  var s = 256;
+  var windowHeight = window.innerHeight;
+  var numberOfPizzas = windowHeight/s * cols;
+
   // create a dom fragment to store all the mover elements to append at once
   var movers_fragment = document.createDocumentFragment();
   // create the bg mover pizza elements
-  for (var i = 0; i < 20; i++) {
+  for (var i = 0; i < numberOfPizzas; i++) {
+    var phase = Math.sin((scroll_limit/1250) + (i % 5));
     var elem = document.createElement('img');
     elem.classList.add('mover');
     elem.src = "images/pizza.png";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
     elem.basicLeft = (i % cols) * s;
-    // use transforms and viewport positioning so no reflows and we don't have to
-    // generate/manipulate hundreds of bg pizzas to cover the viewport
-    elem.style.transform = 'translate('+(elem.basicLeft) + 'vw'+','+ (Math.floor(i / cols) * s) + 'vh)';
+    elem.style.left = elem.basicLeft + 100 * phase + 'px';
+    elem.style.top = (Math.floor(i / cols) * s) + 'px';
     // append the element to the doc fragment
     movers_fragment.appendChild(elem);
   }
