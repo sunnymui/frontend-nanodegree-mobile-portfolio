@@ -2,7 +2,7 @@
 
 This website was provided unoptimized with many performance problems leading to slow initial loading, excessive cpu usage, and performance very far from a 60fps target.
 
-I implemented many web performance optimizations to make the page load and run faster. Google Page Speed currently gives a score of ~ 97 on both mobile/desktop for the index.html page. The pizza.html page was optimized so that functions making visual changes don't cause jank i.e. maintains a FPS of 60fps or in other words runs animation functions in under 16ms.
+I implemented many web performance optimizations to make the `index.html` and `views/pizza.html` load and run faster. Google Page Speed currently gives a score of ~ 97 on both mobile/desktop for the index.html page. The pizza.html page was optimized so that functions making visual changes don't cause jank i.e. maintains a FPS of 60fps or in other words runs animation functions in under 16ms.
 
 ### Initial Load Optimizations
 
@@ -43,6 +43,12 @@ OR
 Clone the repo and click on either index.html or views/pizza.html to see each optimized page.
 
 View web performance information using Chrome DevTools' Performance tab by recording a performance snapshot on load and while using the pages. Check page loading speed scores using Google Page Speed.
+
+### Comparing to Unoptimized Performance
+
+`project-2048.html` and `project-webperf.html` are left unoptimized. You can click to those from index.html to compare loading speed.
+
+To get the unoptimized version of all pages, clone the untouched repository at [https://github.com/udacity/frontend-nanodegree-mobile-portfolio](https://github.com/udacity/frontend-nanodegree-mobile-portfolio)
 
 ## Original Specifications for Website Performance Optimization Portfolio Project
 
